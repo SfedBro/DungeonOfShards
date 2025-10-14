@@ -20,6 +20,7 @@ public class WeaponController : MonoBehaviour
     void Shoot() {
         print(Time.deltaTime);
         if (weaponInd == -1) return;
-        weapons[weaponInd].ShootWeapon();
+        Vector2 dir = Input.mousePosition - transform.position;
+        weapons[weaponInd].ShootWeapon(transform, dir);
     }
 }
