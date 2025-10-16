@@ -8,19 +8,18 @@ public class WeaponController : MonoBehaviour
     [SerializeField] int weaponInd;
 
     void Start() {
+        weapons.AddRange(GetComponentsInChildren<BaseWeapon>());
         weaponInd = weapons.Count > 0 ? 0 : -1;
     }
 
     void Update() {
-        print(weaponInd);
         bool needToShoot = Input.GetButton("Fire1");
         if (needToShoot) Shoot();
     }
 
     void Shoot() {
-        print(Time.deltaTime);
         if (weaponInd == -1) return;
-        Vector2 dir = Input.mousePosition - transform.position;
+        Vector2 dir = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
         weapons[weaponInd].ShootWeapon(transform, dir);
     }
 }

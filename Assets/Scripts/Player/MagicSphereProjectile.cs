@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class MagicSphereProjectile : MonoBehaviour
 {
-    public float maxRange = 3f;
     public float maxSpeed = 1f;
 
     public Vector2 targetPosition;
@@ -16,8 +15,9 @@ public class MagicSphereProjectile : MonoBehaviour
         if (movingToTarget && Vector3.Distance(transform.position, (Vector3)targetPosition) < 0.01f) movingToTarget = false;
     }
 
-    void OnTriggerEnter(Collider other) {
-        if (other.transform == player) {
+    void OnTriggerEnter2D(Collider2D other) {
+        print("collision");
+        if (!movingToTarget && other.transform == player) {
             Destroy(gameObject);
         }
     }
