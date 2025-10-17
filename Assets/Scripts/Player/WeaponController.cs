@@ -13,6 +13,10 @@ public class WeaponController : MonoBehaviour
     }
 
     void Update() {
+        if (weapons.Count > 0) {
+            if (Input.GetKeyDown(KeyCode.Alpha1)) weaponInd = (weaponInd - 1) % weapons.Count;
+            if (Input.GetKeyDown(KeyCode.Alpha2)) weaponInd = (weaponInd + 1) % weapons.Count;
+        }
         bool needToShoot = Input.GetButton("Fire1");
         if (needToShoot) Shoot();
     }

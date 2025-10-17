@@ -1,13 +1,16 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MagicSphereProjectile : MonoBehaviour
 {
+    public float damage = 5f;
     public float maxSpeed = 1f;
 
     public Vector2 targetPosition;
     public Transform player;
 
     bool movingToTarget = true;
+    readonly HashSet<Transform> hitEnemies = new();
 
     void FixedUpdate() {
         Vector3 target = movingToTarget ? (Vector3)targetPosition : player.position;
@@ -16,7 +19,10 @@ public class MagicSphereProjectile : MonoBehaviour
     }
 
     void OnTriggerEnter2D(Collider2D other) {
-        print("collision");
+        if (other.CompareTag("Enemy") && !hitEnemies.Contains(other.transform)) {
+            other.GetComponent<Enemy>().TakeDamage(damage);
+            hitEnemies.Add(other.transform);
+        }
         if (!movingToTarget && other.transform == player) {
             Destroy(gameObject);
         }
