@@ -9,10 +9,10 @@ public class Sword : CloseCombatWeapon
             var target = targets[i];
             if (!target)
                 continue;
-            var healthScript = target.GetComponent<Enemy>();
-            if (healthScript != null)
+            var enemyScript = target.GetComponent<Enemy>();
+            if (enemyScript != null)
             {
-                healthScript.TakeDamage(damage);
+                enemyScript.TakeDamage(damage);
                 Debug.Log($"{name} поразил {target.name} на {damage} урона!");
             }
         }
