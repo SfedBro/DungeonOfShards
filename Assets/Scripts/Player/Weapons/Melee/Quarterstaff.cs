@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Sword : CloseCombatWeapon
+public class Quarterstaff : CloseCombatWeapon
 {
     protected override void MeleeAttack(Collider2D[] targets, int targetsCount)
     {

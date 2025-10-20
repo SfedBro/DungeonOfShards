@@ -4,7 +4,7 @@ public abstract class CloseCombatWeapon : BaseWeapon
 {
     [Header("Weapon arguments")]
     public Collider2D attackCollider;
-    public string[] affectedMasks;
+    public LayerMask affectedMasks;
     public float damage;
     public float offset;
     public float defaultCoolDown;
@@ -17,8 +17,8 @@ public abstract class CloseCombatWeapon : BaseWeapon
     void Awake()
     {
         _filter = new ContactFilter2D { useTriggers = true };
-        if (affectedMasks.Length > 0)
-            _filter.SetLayerMask(LayerMask.GetMask(affectedMasks));
+        if (affectedMasks != 0)
+            _filter.SetLayerMask(affectedMasks);
     }
 
     private void Update()
@@ -32,18 +32,18 @@ public abstract class CloseCombatWeapon : BaseWeapon
 
     public override void ShootWeapon(Transform player, Vector2 dir)
     {
-        if (coolDown <= 0f)
+        if (coolDown > 0)
+            return;
+        if (!attackCollider)
         {
-            if (!attackCollider)
-            {
-                Debug.LogWarning($"{name}: attackCollider not assigned!");
-                return;
-            }
-            int hitCount = Physics2D.OverlapCollider(attackCollider, _filter, _hitResults);
-            if (hitCount > 0)
-                MeleeAttack(_hitResults, hitCount);
-            coolDown = defaultCoolDown;
+            Debug.LogWarning($"{name}: attackCollider not assigned!");
+            return;
         }
+        int hitCount = Physics2D.OverlapCollider(attackCollider, _filter, _hitResults);
+        if (hitCount > 0)
+            MeleeAttack(_hitResults, hitCount);
+        coolDown = defaultCoolDown;
+
     }
 
     protected abstract void MeleeAttack(Collider2D[] targets, int targetsCount);

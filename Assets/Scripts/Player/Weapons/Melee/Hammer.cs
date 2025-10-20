@@ -1,16 +1,20 @@
 using UnityEngine;
 
-public class Hammer : MonoBehaviour
+public class Hammer : CloseCombatWeapon
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    protected override void MeleeAttack(Collider2D[] targets, int targetsCount)
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        for (int i = 0; i < targetsCount; i++)
+        {
+            var target = targets[i];
+            if (!target)
+                continue;
+            var healthScript = target.GetComponent<Enemy>();
+            if (healthScript != null)
+            {
+                healthScript.TakeDamage(damage);
+                Debug.Log($"{name} поразил {target.name} на {damage} урона!");
+            }
+        }
     }
 }
