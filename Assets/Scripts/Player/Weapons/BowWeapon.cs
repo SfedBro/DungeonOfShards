@@ -14,7 +14,7 @@ public class BowWeapon : BaseWeapon
         currentArrows = maxArrows;
     }
 
-    void Update() {
+    protected override void Update() {
         currentCooldown = Mathf.Max(currentCooldown - Time.deltaTime, 0);
     }
 
@@ -24,6 +24,7 @@ public class BowWeapon : BaseWeapon
             --currentArrows;
             ArrowProjectile arrow = Instantiate(arrowPrefab, player.position + (Vector3)dir.normalized * offsetDist, Quaternion.identity);
             arrow.dir = dir.normalized * arrow.speed;
+            ShardsForEach(shard => arrow.OnHitEffects.AddListener(shard.OnHit));
         }
     }
 }

@@ -166,6 +166,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 5
+  OnHitEffects:
+    m_PersistentCalls:
+      m_Calls: []
   maxRange: 10
   speed: 5
   dir: {x: 0, y: 0}

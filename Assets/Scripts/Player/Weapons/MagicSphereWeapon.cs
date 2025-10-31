@@ -13,6 +13,7 @@ public class MagicSphereWeapon : BaseWeapon
             sphereProjectileInstance = Instantiate(SphereProjectilePrefab, player.position + (Vector3)dir.normalized * offsetDist, Quaternion.identity);
             sphereProjectileInstance.targetPosition = (Vector2)player.position + Vector2.ClampMagnitude(dir, maxRange);
             sphereProjectileInstance.player = player;
+            ShardsForEach(shard => sphereProjectileInstance.OnHitEffects.AddListener(shard.OnHit));
         }
     }
 }
