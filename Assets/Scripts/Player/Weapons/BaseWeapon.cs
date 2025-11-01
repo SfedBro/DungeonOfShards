@@ -8,7 +8,7 @@ public abstract class BaseWeapon : MonoBehaviour
 
     public abstract void ShootWeapon(Transform player, Vector2 dir);
 
-    protected void ShardsForEach(Action<BaseShard> doForEachShard) {
+    public void ShardsForEach(Action<BaseShard> doForEachShard) {
         shards.ForEach(doForEachShard);
     }
 

@@ -26,4 +26,8 @@ public class WeaponController : MonoBehaviour
         Vector2 dir = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
         weapons[weaponInd].ShootWeapon(transform, dir);
     }
+
+    public BaseWeapon GetCurrentWeapon() {
+        return weaponInd == -1 ? null : weapons[weaponInd];
+    }
 }

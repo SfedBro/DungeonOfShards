@@ -24,6 +24,7 @@ public class BowWeapon : BaseWeapon
             --currentArrows;
             ArrowProjectile arrow = Instantiate(arrowPrefab, player.position + (Vector3)dir.normalized * offsetDist, Quaternion.identity);
             arrow.dir = dir.normalized * arrow.speed;
+            ShardsForEach(shard => shard.OnWeaponShootProjectile(arrow, arrow.dir));
             ShardsForEach(shard => arrow.OnHitEffects.AddListener(shard.OnHit));
         }
     }
