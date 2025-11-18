@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -6,6 +7,7 @@ public class BaseProjectile : MonoBehaviour
 {
     public float damage = 5f;
     public UnityEvent<Enemy> OnHitEffects = new();
+    public BaseWeapon weapon;
 
     protected readonly HashSet<Transform> hitEnemies = new();
 
@@ -18,7 +20,8 @@ public class BaseProjectile : MonoBehaviour
     }
 
     protected virtual void OnHit(Enemy enemy) {
-        enemy.TakeDamage(damage);
+        float newDamage = weapon.EvaluateWeaponDamage(damage);
+        enemy.TakeDamage(newDamage);
         OnHitEffects.Invoke(enemy);
     }
 }
