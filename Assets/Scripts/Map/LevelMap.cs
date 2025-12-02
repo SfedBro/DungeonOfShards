@@ -70,9 +70,12 @@ public class LevelMap : MonoBehaviour
             while (placedEnemies < maxEnemiesPerRoom && steps < maxDiggerSteps) {
                 ++steps;
                 // move digger
-                digger += dir;
+                Vector2Int newDiggerPos = digger + dir;
+                bool forceNewDir = false;
+                if (newDiggerPos.x < room.x || newDiggerPos.x >= room.x + room.xLen || newDiggerPos.y < room.y || newDiggerPos.y >= room.y + room.yLen) forceNewDir = true;
+                else digger = newDiggerPos;
                 // change direction if needed
-                if (Random.value <= chanceChangeDir) {
+                if (forceNewDir || Random.value <= chanceChangeDir) {
                     dirInd = (dirInd + changeDirOffset[Random.Range(0, changeDirOffset.Count)] + dirs.Count) % dirs.Count;
                     dir = dirs[dirInd];
                 } else chanceChangeDir += incChanceChangeDir;
