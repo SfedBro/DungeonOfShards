@@ -1,15 +1,25 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class LevelMap : MonoBehaviour
 {
     public int xSize, ySize;
 
+    [Header("Rooms")]
+    public int maxEnemiesPerRoom = 3;
+    public int maxDiggerSteps = 30;
+    public float chanceToPlaceEnemy = 0.05f;
+    public float baseChanceChangeDir = 0.05f;
+    public float incChanceChangeDir = 0.05f;
+
     MapTile[,] tiles;
 
     void Start() {
         GenerateMap();
+        SpawnEnemies();
     }
 
     void IterateOver2Loops(int n1, int n2, Action<int, int> action) {
@@ -38,5 +48,40 @@ public class LevelMap : MonoBehaviour
             types[x, y] = tile == null ? MapTileType.Empty : tile.mapTileType;
         });
         return types;
+    }
+
+    struct Room {
+        public int x, y, xLen, yLen;
+    }
+    void SpawnEnemies() {
+        List<Room> rooms = new(); // get rooms
+        List<Vector2Int> dirs = new() { new(1, 0), new(0, 1), new(-1, 0), new(0, -1) };
+        List<int> changeDirOffset = new() { 1, -1 };
+        // for every room
+        for (int i = 0; i < rooms.Count; i++) {
+            Room room = rooms[i];
+            // spawn digger
+            Vector2Int digger = new(Random.Range(room.x, room.x + room.xLen), Random.Range(room.y, room.y + room.yLen));
+            int dirInd = Random.Range(0, dirs.Count);
+            Vector2Int dir = dirs[dirInd];
+            float chanceChangeDir = baseChanceChangeDir;
+            // terminal criteries
+            int placedEnemies = 0, steps = 0;
+            while (placedEnemies < maxEnemiesPerRoom && steps < maxDiggerSteps) {
+                ++steps;
+                // move digger
+                digger += dir;
+                // change direction if needed
+                if (Random.value <= chanceChangeDir) {
+                    dirInd = (dirInd + changeDirOffset[Random.Range(0, changeDirOffset.Count)] + dirs.Count) % dirs.Count;
+                    dir = dirs[dirInd];
+                } else chanceChangeDir += incChanceChangeDir;
+                // spawn enemy if needed
+                if (Random.value <= chanceToPlaceEnemy) {
+                    // place enemy
+                    ++placedEnemies;
+                }
+            }
+        }
     }
 }
