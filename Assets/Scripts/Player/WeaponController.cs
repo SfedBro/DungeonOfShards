@@ -13,6 +13,10 @@ public class WeaponController : MonoBehaviour
     }
 
     void Update() {
+        if (weapons.Count > 0) {
+            if (Input.GetKeyDown(KeyCode.Alpha1)) weaponInd = (weaponInd - 1) % weapons.Count;
+            if (Input.GetKeyDown(KeyCode.Alpha2)) weaponInd = (weaponInd + 1) % weapons.Count;
+        }
         bool needToShoot = Input.GetButton("Fire1");
         if (needToShoot) Shoot();
     }
@@ -21,5 +25,9 @@ public class WeaponController : MonoBehaviour
         if (weaponInd == -1) return;
         Vector2 dir = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
         weapons[weaponInd].ShootWeapon(transform, dir);
+    }
+
+    public BaseWeapon GetCurrentWeapon() {
+        return weaponInd == -1 ? null : weapons[weaponInd];
     }
 }

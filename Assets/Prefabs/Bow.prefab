@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3477437886722657615
+--- !u!1 &6527748621528315503
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,22 +8,22 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4800458914022188593}
-  - component: {fileID: 1339076955999253430}
+  - component: {fileID: 8227250694279080158}
+  - component: {fileID: 5018450023033030048}
   m_Layer: 0
-  m_Name: MagicSphere
+  m_Name: Bow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4800458914022188593
+--- !u!4 &8227250694279080158
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3477437886722657615}
+  m_GameObject: {fileID: 6527748621528315503}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -32,18 +32,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1339076955999253430
+--- !u!114 &5018450023033030048
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3477437886722657615}
+  m_GameObject: {fileID: 6527748621528315503}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ee3bb6b0e41a1596bddb8e545fa5a2e, type: 3}
+  m_Script: {fileID: 11500000, guid: e607f812c532d47afa6c405a48e1b3c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SphereProjectilePrefab: {fileID: 85675012837588226, guid: 815610a4093e3f748a302bae75e82936, type: 3}
+  arrowPrefab: {fileID: 6058541401865980984, guid: e90c2b18a935adfaaaca215f6dcc2a42, type: 3}
   offsetDist: 0.5
-  maxRange: 5
+  cooldown: 1
+  maxArrows: 5

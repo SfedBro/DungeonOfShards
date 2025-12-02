@@ -11,8 +11,12 @@ public class MagicSphereWeapon : BaseWeapon
     public override void ShootWeapon(Transform player, Vector2 dir) {
         if (sphereProjectileInstance == null) {
             sphereProjectileInstance = Instantiate(SphereProjectilePrefab, player.position + (Vector3)dir.normalized * offsetDist, Quaternion.identity);
-            sphereProjectileInstance.targetPosition = (Vector2)player.position + Vector2.ClampMagnitude(dir, maxRange);
+            sphereProjectileInstance.weapon = this;
             sphereProjectileInstance.player = player;
+            sphereProjectileInstance.targetPosition = (Vector2)player.position + Vector2.ClampMagnitude(dir, maxRange);
+            sphereProjectileInstance.maxSpeed = EvaluateWeaponProjectileSpeed(sphereProjectileInstance.maxSpeed);
+            ShardsForEach(shard => shard.OnWeaponShootProjectile(sphereProjectileInstance, Vector2.ClampMagnitude(dir, maxRange)));
+            ShardsForEach(shard => sphereProjectileInstance.OnHitEffects.AddListener(shard.OnHit));
         }
     }
 }

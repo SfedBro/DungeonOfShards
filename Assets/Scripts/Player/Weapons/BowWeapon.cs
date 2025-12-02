@@ -1,0 +1,33 @@
+using System.Linq;
+using UnityEngine;
+
+public class BowWeapon : BaseWeapon
+{
+    public ArrowProjectile arrowPrefab;
+    public float offsetDist = 0.5f;
+    public float cooldown = 1f;
+    public int maxArrows = 5;
+
+    float currentCooldown = 0;
+    int currentArrows;
+
+    void Start() {
+        currentArrows = maxArrows;
+    }
+
+    protected override void Update() {
+        currentCooldown = Mathf.Max(currentCooldown - Time.deltaTime, 0);
+    }
+
+    public override void ShootWeapon(Transform player, Vector2 dir) {
+        if (currentCooldown == 0 && currentArrows > 0) {
+            currentCooldown = EvaluateWeaponCooldown(cooldown);
+            --currentArrows;
+            ArrowProjectile arrow = Instantiate(arrowPrefab, player.position + (Vector3)dir.normalized * offsetDist, Quaternion.identity);
+            arrow.weapon = this;
+            arrow.velocity = dir.normalized * EvaluateWeaponProjectileSpeed(arrow.speed);
+            ShardsForEach(shard => shard.OnWeaponShootProjectile(arrow, arrow.velocity));
+            ShardsForEach(shard => arrow.OnHitEffects.AddListener(shard.OnHit));
+        }
+    }
+}
