@@ -41,7 +41,7 @@ namespace Game.Navigation
                 {
                     if (!neighbor.free || closedSet.Contains(neighbor))
                         continue;
-                    if ((neighbor.allowedMovement & movementType) == 0)
+                    if (neighbor.allowedMovement == movementType)
                         continue;
 
                     float newCost = current.gCost + Vector3.Distance(GridToWorld(current), GridToWorld(neighbor));
