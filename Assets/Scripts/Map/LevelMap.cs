@@ -20,15 +20,16 @@ public class LevelMap : MonoBehaviour
     MapTile[,] tiles;
     List<Room> rooms;
 
-    List<Vector2Int> dirs = new() { new(1, 0), new(0, 1), new(-1, 0), new(0, -1) };
+    readonly List<Vector2Int> dirs = new() { new(1, 0), new(0, 1), new(-1, 0), new(0, -1) };
     struct Room {
         public int x, y, xLen, yLen;
-        public int xMax() { return x + xLen; }
-        public int yMax() { return y + yLen; }
+        public readonly int XMax() { return x + xLen; }
+        public readonly int YMax() { return y + yLen; }
     }
 
     void Start() {
         GenerateMap();
+        AddSpecialTiles();
         SpawnEnemies();
     }
 
@@ -40,7 +41,7 @@ public class LevelMap : MonoBehaviour
     
     // destroy current map if exists and create new one
     void GenerateMap() {
-        IterateOver2Loops(tiles.GetLength(0), tiles.GetLength(1), (x, y) => {
+        if (tiles != null) IterateOver2Loops(tiles.GetLength(0), tiles.GetLength(1), (x, y) => {
             MapTile tile = tiles[x, y];
             if (tile != null) Destroy(tile.gameObject);
         });
@@ -56,10 +57,11 @@ public class LevelMap : MonoBehaviour
                 preTiles[digger.x, digger.y] = MapTileType.Empty;
                 Vector2Int dir = dirs.SelectRandom();
                 Vector2Int newDigger = digger + dir;
-                if (newDigger.x < room.x || newDigger.x >= room.xMax() || newDigger.y < room.y || newDigger.y >= room.yMax()) diggers[d] = newDigger;
+                if (newDigger.x < room.x || newDigger.x >= room.XMax() || newDigger.y < room.y || newDigger.y >= room.YMax()) diggers[d] = newDigger;
             }
         }
         // TODO: generate special tiles
+        tiles = new MapTile[xSize, ySize];
     }
 
     // get map tile by coords
@@ -84,7 +86,7 @@ public class LevelMap : MonoBehaviour
         for (int i = 0; i < rooms.Count; ++i) {
             Room room = rooms[i];
             // spawn digger
-            Vector2Int digger = new(Random.Range(room.x, room.xMax()), Random.Range(room.y, room.yMax()));
+            Vector2Int digger = new(Random.Range(room.x, room.XMax()), Random.Range(room.y, room.YMax()));
             int dirInd = Random.Range(0, dirs.Count);
             Vector2Int dir = dirs[dirInd];
             float chanceChangeDir = baseChanceChangeDir;
@@ -95,7 +97,7 @@ public class LevelMap : MonoBehaviour
                 // move digger
                 Vector2Int newDiggerPos = digger + dir;
                 bool forceNewDir = false;
-                if (newDiggerPos.x < room.x || newDiggerPos.x >= room.xMax() || newDiggerPos.y < room.y || newDiggerPos.y >= room.yMax()) forceNewDir = true;
+                if (newDiggerPos.x < room.x || newDiggerPos.x >= room.XMax() || newDiggerPos.y < room.y || newDiggerPos.y >= room.YMax()) forceNewDir = true;
                 else digger = newDiggerPos;
                 // change direction if needed
                 if (forceNewDir || Random.value <= chanceChangeDir) {
@@ -110,10 +112,51 @@ public class LevelMap : MonoBehaviour
             }
         }
     }
+
+    void AddSpecialTiles() {
+        PerlinNoise pn = new(xSize, ySize);
+        for (int x = 0; x < xSize; ++x) {
+            List<float> list = new();
+            for (int y = 0; y < ySize; ++y) list.Add(pn.Get(x, y));
+            print(string.Join(" ", list.Select(a => a >= 0.25f)));
+        }
+    }
 }
 
 public static class ListUtils {
     public static T SelectRandom<T>(this IEnumerable<T> values) {
         return values.ElementAt(Random.Range(0, values.Count()));
+    }
+}
+
+class PerlinNoise {
+    Vector2[,] gradients;
+    int xSize, ySize;
+
+    public PerlinNoise(int xSize, int ySize) {
+        this.xSize = xSize; this.ySize = ySize;
+        gradients = new Vector2[xSize + 1, ySize + 1];
+        for (int x = 0; x < xSize + 1; ++x)
+            for (int y = 0; y < ySize + 1; ++y)
+                gradients[x, y] = Quaternion.Euler(0, 0, Random.Range(0f, 360f)) * Vector2.up;
+    }
+
+    public float Get(int x, int y) {
+        Vector2
+            g00 = gradients[x, y],
+            g01 = gradients[x, y + 1],
+            g10 = gradients[x + 1, y],
+            g11 = gradients[x + 1, y + 1];
+        float
+            dot00 = Dot(g00, 0.5f, 0.5f),
+            dot01 = Dot(g01, 0.5f, -0.5f),
+            dot10 = Dot(g10, -0.5f, 0.5f),
+            dot11 = Dot(g11, -0.5f, -0.5f);
+        float yl1 = Mathf.Lerp(dot00, dot01, 0.5f), yl2 = Mathf.Lerp(dot10, dot11, 0.5f);
+        return Mathf.Lerp(yl1, yl2, 0.5f);
+    }
+
+    float Dot(Vector2 v, float dx, float dy) {
+        return v.x * dx + v.y * dy;
     }
 }
