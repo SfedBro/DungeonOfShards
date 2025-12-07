@@ -9,13 +9,19 @@ public class LevelMap : MonoBehaviour
     public int xSize, ySize;
 
     [Header("Rooms")]
+    public MapTile mapTilePrefab;
     public int maxRoomCount = 10;
     public float minRatioXY = 0.2f, maxRatioXY = 0.8f;
     public int maxEnemiesPerRoom = 3;
+    [Header("Room Drunkard Walkers")]
+    public int drunkardWalkersSteps = 15;
+    [Header("Room Diggers")]
     public int maxDiggerSteps = 30;
     public float chanceToPlaceEnemy = 0.05f;
     public float baseChanceChangeDir = 0.05f;
     public float incChanceChangeDir = 0.05f;
+    [Header("Room Special Tiles")]
+    public float specialTileThreshold = 0.25f;
 
     MapTileType[,] preTiles;
     MapTile[,] tiles;
@@ -26,17 +32,19 @@ public class LevelMap : MonoBehaviour
     void Start() {
         GenerateMap();
         AddSpecialTiles();
+        SpawnMap();
         SpawnEnemies();
     }
 
+    // shortcut for 2 fors
     void IterateOver2Loops(int n1, int n2, Action<int, int> action) {
         for (int i1 = 0; i1 < n1; ++i1)
             for (int i2 = 0; i2 < n2; ++i2)
                 action(i1, i2);
     }
     
-    // destroy current map if exists and create new one
     void GenerateMap() {
+        // destroy current map if exists and create new one
         if (tiles != null) IterateOver2Loops(tiles.GetLength(0), tiles.GetLength(1), (x, y) => {
             MapTile tile = tiles[x, y];
             if (tile != null) Destroy(tile.gameObject);
@@ -48,17 +56,17 @@ public class LevelMap : MonoBehaviour
         for (int i = 0; i < rooms.Count; ++i) {
             Room room = rooms[i];
             int xMid = room.x + room.xLen / 2, yMid = room.y + room.yLen / 2;
-            List<Vector2Int> diggers = new() { new(xMid + 1, yMid + 1), new(xMid - 1, yMid + 1), new(xMid + 1, yMid - 1), new(xMid - 1, yMid - 1) };
-            for (int d = 0; d < diggers.Count; ++d) {
-                Vector2Int digger = diggers[d];
-                preTiles[digger.x, digger.y] = MapTileType.Empty;
-                Vector2Int dir = dirs.SelectRandom();
-                Vector2Int newDigger = digger + dir;
-                if (newDigger.x < room.x || newDigger.x >= room.XMax() || newDigger.y < room.y || newDigger.y >= room.YMax()) diggers[d] = newDigger;
+            List<Vector2Int> walkers = new() { new(xMid + 1, yMid + 1), new(xMid - 1, yMid + 1), new(xMid + 1, yMid - 1), new(xMid - 1, yMid - 1) };
+            for (int iter = 0; iter < drunkardWalkersSteps; iter++) {
+                for (int w = 0; w < walkers.Count; ++w) {
+                    Vector2Int walker = walkers[w];
+                    preTiles[walker.x, walker.y] = MapTileType.Empty;
+                    Vector2Int dir = dirs.SelectRandom();
+                    Vector2Int newWalker = walker + dir;
+                    if (newWalker.x >= room.x && newWalker.x < room.XMax() && newWalker.y >= room.y && newWalker.y < room.YMax()) walkers[w] = newWalker;
+                }
             }
         }
-        // TODO: generate special tiles
-        tiles = new MapTile[xSize, ySize];
     }
 
     // get map tile by coords
@@ -77,6 +85,7 @@ public class LevelMap : MonoBehaviour
         return types;
     }
 
+    // spawn enemies on generated map
     void SpawnEnemies() {
         List<int> changeDirOffset = new() { 1, -1 };
         // for every room
@@ -110,13 +119,24 @@ public class LevelMap : MonoBehaviour
         }
     }
 
+    // add special tiles to map
     void AddSpecialTiles() {
         PerlinNoise pn = new(xSize, ySize);
-        for (int x = 0; x < xSize; ++x) {
-            List<float> list = new();
-            for (int y = 0; y < ySize; ++y) list.Add(pn.Get(x, y));
-            print(string.Join(" ", list.Select(a => a >= 0.25f)));
-        }
+        IterateOver2Loops(xSize, ySize, (x, y) => {
+            float n = pn.Get(x, y);
+            if (preTiles[x, y] == MapTileType.Empty && n >= specialTileThreshold) preTiles[x, y] = MapTileType.Slow;
+        });
+    }
+
+    // spawn real tiles
+    void SpawnMap() {
+        // init matrix
+        tiles = new MapTile[xSize, ySize];
+        IterateOver2Loops(xSize, ySize, (x, y) => {
+            MapTile tile = Instantiate(mapTilePrefab, new(x, y, 0), Quaternion.identity, transform);
+            tile.mapTileType = preTiles[x, y];
+            tiles[x, y] = tile;
+        });
     }
 }
 

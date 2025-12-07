@@ -165,12 +165,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   xSize: 10
   ySize: 10
+  mapTilePrefab: {fileID: 6453784462756596918, guid: 2b50a0ebccc25144084a4ee54720d486, type: 3}
   maxRoomCount: 10
+  minRatioXY: 0.2
+  maxRatioXY: 0.8
   maxEnemiesPerRoom: 3
+  drunkardWalkersSteps: 15
   maxDiggerSteps: 30
   chanceToPlaceEnemy: 0.05
   baseChanceChangeDir: 0.05
   incChanceChangeDir: 0.05
+  specialTileThreshold: 0.25
 --- !u!1 &1875005412
 GameObject:
   m_ObjectHideFlags: 0
