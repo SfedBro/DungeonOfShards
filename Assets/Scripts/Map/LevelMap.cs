@@ -49,10 +49,14 @@ public class LevelMap : MonoBehaviour
             MapTile tile = tiles[x, y];
             if (tile != null) Destroy(tile.gameObject);
         });
+        // matrix for storing map tiles types, before creating actual types
         preTiles = new MapTileType[xSize, ySize];
+        // default tile types to wall
         IterateOver2Loops(xSize, ySize, (x, y) => preTiles[x, y] = MapTileType.Wall);
         int[] corners = new int[4] {-xSize / 2, -ySize / 2, (xSize + 1) / 2, (ySize + 1) / 2}; // map corners
         rooms = MapSpacePartitioning.GenerateRooms(corners, maxRoomCount, minRatioXY, maxRatioXY); // generates room points
+        print(rooms.Count);
+        rooms.ForEach(r => print(r));
         for (int i = 0; i < rooms.Count; ++i) {
             Room room = rooms[i];
             int xMid = room.x + room.xLen / 2, yMid = room.y + room.yLen / 2;
