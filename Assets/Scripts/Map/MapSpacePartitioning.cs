@@ -116,6 +116,6 @@ public struct Room
         xLen = ax - ix;
         yLen = ay - iy;
     }
-    public int XMax() { return x + xLen; }
-    public int YMax() { return y + yLen; }
+    public readonly int XMax() { return x + xLen; }
+    public readonly int YMax() { return y + yLen; }
 }

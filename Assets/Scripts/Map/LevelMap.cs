@@ -54,22 +54,22 @@ public class LevelMap : MonoBehaviour
         preTiles = new MapTileType[xSize, ySize];
         // default tile types to wall
         IterateOver2Loops(xSize, ySize, (x, y) => preTiles[x, y] = MapTileType.Wall);
-        int[] corners = new int[4] {-xSize / 2, -ySize / 2, (xSize + 1) / 2, (ySize + 1) / 2}; // map corners
+        int[] corners = new int[4] {0, 0, xSize, ySize}; // map corners
         rooms = MapSpacePartitioning.GenerateRooms(corners, maxRoomCount, minRatioXY, maxRatioXY); // generates room points
         int ind = 0;
-        foreach (Room r in rooms)
-        {
-            roomsView.Add(ind++);
-        }
-        print(rooms.Count);
-        rooms.ForEach(r => print(r));
+        foreach (Room r in rooms) roomsView.Add(ind++);
+        print($"rooms: {rooms.Count}");
         for (int i = 0; i < rooms.Count; ++i) {
             Room room = rooms[i];
+            print($"room {room.x} {room.y} {room.xLen} {room.yLen}");
             int xMid = room.x + room.xLen / 2, yMid = room.y + room.yLen / 2;
-            List<Vector2Int> walkers = new() { new(xMid + 1, yMid + 1), new(xMid - 1, yMid + 1), new(xMid + 1, yMid - 1), new(xMid - 1, yMid - 1) };
+            Vector2Int roomMin = new(room.x, room.y), roomMax = new(room.XMax() - 1, room.YMax() - 1);
+            print($"{roomMin} {roomMax}");
+            List<Vector2Int> walkers = new List<Vector2Int>{ new(xMid + 1, yMid + 1), new(xMid - 1, yMid + 1), new(xMid + 1, yMid - 1), new(xMid - 1, yMid - 1) }.Select(w => { w.Clamp(roomMin, roomMax); return w;}).ToList();
             for (int iter = 0; iter < drunkardWalkersSteps; iter++) {
                 for (int w = 0; w < walkers.Count; ++w) {
                     Vector2Int walker = walkers[w];
+                    print($"walker {walker}");
                     preTiles[walker.x, walker.y] = MapTileType.Empty;
                     Vector2Int dir = dirs.SelectRandom();
                     Vector2Int newWalker = walker + dir;
