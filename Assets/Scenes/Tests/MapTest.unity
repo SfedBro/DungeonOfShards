@@ -163,8 +163,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d5f14d0c29ab23458a8b5d720ed79e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xSize: 10
-  ySize: 10
+  xSize: 60
+  ySize: 60
   mapTilePrefab: {fileID: 6453784462756596918, guid: 2b50a0ebccc25144084a4ee54720d486, type: 3}
   maxRoomCount: 10
   minRatioXY: 0.2
@@ -176,6 +176,7 @@ MonoBehaviour:
   baseChanceChangeDir: 0.05
   incChanceChangeDir: 0.05
   specialTileThreshold: 0.25
+  roomsView: 
 --- !u!1 &1875005412
 GameObject:
   m_ObjectHideFlags: 0

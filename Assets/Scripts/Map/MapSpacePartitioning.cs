@@ -29,13 +29,8 @@ public static class MapSpacePartitioning
                 {
                     int split = Random.Range(minSplit, maxSplit);
 
-                    if (split - current.y == 0)
-                    {
-                        split += 1
-                    }
-                    elif(current.YMax() - split == 0){
-                        split -= 1;
-                    }
+                    if (split - current.y == 0) split += 1;
+                    else if (current.YMax() - split == 0) split -= 1;
 
                     Room bottom = new Room(current.x, current.y, current.XMax(), split);
                     Room top = new Room(current.x, split, current.XMax(), current.YMax());
@@ -55,13 +50,8 @@ public static class MapSpacePartitioning
                     {
                         int split = Random.Range(minSplit, maxSplit);
 
-                        if (split - current.x == 0)
-                        {
-                            split += 1
-                        }
-                        elif(current.XMax() - split == 0){
-                            split -= 1;
-                        }
+                        if (split - current.x == 0) split += 1;
+                        else if (current.XMax() - split == 0) split -= 1;
 
                         Room left = new Room(current.x, current.y, split, current.YMax());
                         Room right = new Room(split, current.y, current.XMax(), current.YMax());
@@ -84,13 +74,8 @@ public static class MapSpacePartitioning
                 {
                     int split = Random.Range(minSplit, maxSplit);
 
-                    if (split - current.x == 0)
-                    {
-                        split += 1
-                    }
-                    elif(current.XMax() - split == 0){
-                        split -= 1;
-                    }
+                    if (split - current.x == 0) split += 1;
+                    else if (current.XMax() - split == 0) split -= 1;
 
                     Room left = new Room(current.x, current.y, split, current.YMax());
                     Room right = new Room(split, current.y, current.XMax(), current.YMax());
@@ -110,13 +95,8 @@ public static class MapSpacePartitioning
                     {
                         int split = Random.Range(minSplit, maxSplit);
 
-                        if (split - current.y == 0)
-                        {
-                            split += 1
-                        }
-                        elif(current.YMax() - split == 0){
-                            split -= 1;
-                        }
+                        if (split - current.y == 0) split += 1;
+                        else if(current.YMax() - split == 0) split -= 1;
 
                         Room bottom = new Room(current.x, current.y, current.XMax(), split);
                         Room top = new Room(current.x, split, current.XMax(), current.YMax());
