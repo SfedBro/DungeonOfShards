@@ -26,6 +26,7 @@ public class LevelMap : MonoBehaviour
     MapTileType[,] preTiles;
     MapTile[,] tiles;
     List<Room> rooms;
+    public List<int> roomsView;
 
     readonly List<Vector2Int> dirs = new() { new(1, 0), new(0, 1), new(-1, 0), new(0, -1) };
 
@@ -55,6 +56,11 @@ public class LevelMap : MonoBehaviour
         IterateOver2Loops(xSize, ySize, (x, y) => preTiles[x, y] = MapTileType.Wall);
         int[] corners = new int[4] {-xSize / 2, -ySize / 2, (xSize + 1) / 2, (ySize + 1) / 2}; // map corners
         rooms = MapSpacePartitioning.GenerateRooms(corners, maxRoomCount, minRatioXY, maxRatioXY); // generates room points
+        int ind = 0;
+        foreach (Room r in rooms)
+        {
+            roomsView.Add(ind++);
+        }
         print(rooms.Count);
         rooms.ForEach(r => print(r));
         for (int i = 0; i < rooms.Count; ++i) {

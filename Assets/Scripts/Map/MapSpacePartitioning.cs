@@ -21,6 +21,7 @@ public static class MapSpacePartitioning
 
             if (horizontal)
             {
+                Debug.Log("Horizontal");
                 int minSplit = current.y + (int)(current.yLen * minRatioXY);
                 int maxSplit = current.y + (int)(current.yLen * maxRatioXY);
 
@@ -37,6 +38,7 @@ public static class MapSpacePartitioning
                 }
                 else if (canVertical)
                 {
+                    Debug.Log("Horizontal drawback");
                     // fallback
                     minSplit = current.x + (int)(current.xLen * minRatioXY);
                     maxSplit = current.x + (int)(current.xLen * maxRatioXY);
@@ -58,6 +60,7 @@ public static class MapSpacePartitioning
             }
             else
             {
+                Debug.Log("Vertical");
                 int minSplit = current.x + (int)(current.xLen * minRatioXY);
                 int maxSplit = current.x + (int)(current.xLen * maxRatioXY);
 
@@ -74,6 +77,7 @@ public static class MapSpacePartitioning
                 }
                 else if (canHorizontal)
                 {
+                    Debug.Log("Vertical drawback");
                     // fallback
                     minSplit = current.y + (int)(current.yLen * minRatioXY);
                     maxSplit = current.y + (int)(current.yLen * maxRatioXY);
@@ -93,6 +97,10 @@ public static class MapSpacePartitioning
 
                 rooms.Add(current);
             }
+        }
+        while (queue.Count > 0)
+        {
+            rooms.Add(queue.Dequeue());
         }
         return rooms;
     }
