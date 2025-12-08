@@ -14,7 +14,7 @@ public class LevelMap : MonoBehaviour
     public float minRatioXY = 0.2f, maxRatioXY = 0.8f;
     public int maxEnemiesPerRoom = 3;
     [Header("Room Drunkard Walkers")]
-    public int drunkardWalkersSteps = 15;
+    public float roomEmptyFraction = 0.8f; // empty tiles * roomEmptyFraction >= all room tiles
     [Header("Room Diggers")]
     public int maxDiggerSteps = 30;
     public float chanceToPlaceEnemy = 0.05f;
@@ -58,21 +58,25 @@ public class LevelMap : MonoBehaviour
         rooms = MapSpacePartitioning.GenerateRooms(corners, maxRoomCount, minRatioXY, maxRatioXY); // generates room points
         int ind = 0;
         foreach (Room r in rooms) roomsView.Add(ind++);
-        print($"rooms: {rooms.Count}");
-        for (int i = 0; i < rooms.Count; ++i) {
-            Room room = rooms[i];
+        foreach (Room room in rooms) {
             print($"room {room.x} {room.y} {room.xLen} {room.yLen}");
             int xMid = room.x + room.xLen / 2, yMid = room.y + room.yLen / 2;
             Vector2Int roomMin = new(room.x, room.y), roomMax = new(room.XMax() - 1, room.YMax() - 1);
-            print($"{roomMin} {roomMax}");
+            // spawning drunkard walkers
             List<Vector2Int> walkers = new List<Vector2Int>{ new(xMid + 1, yMid + 1), new(xMid - 1, yMid + 1), new(xMid + 1, yMid - 1), new(xMid - 1, yMid - 1) }.Select(w => { w.Clamp(roomMin, roomMax); return w;}).ToList();
-            for (int iter = 0; iter < drunkardWalkersSteps; iter++) {
+            HashSet<Vector2Int> emptyTiles = new();
+            int minimumEmptyTiles = (int)Mathf.Ceil(room.xLen * room.yLen * roomEmptyFraction);
+            // termination criteria
+            while (emptyTiles.Count < minimumEmptyTiles) {
                 for (int w = 0; w < walkers.Count; ++w) {
                     Vector2Int walker = walkers[w];
-                    print($"walker {walker}");
+                    // walker changes wall tile to empty
                     preTiles[walker.x, walker.y] = MapTileType.Empty;
+                    emptyTiles.Add(walker);
+                    // then walker tries to walk
                     Vector2Int dir = dirs.SelectRandom();
                     Vector2Int newWalker = walker + dir;
+                    // walker can be only in his room
                     if (newWalker.x >= room.x && newWalker.x < room.XMax() && newWalker.y >= room.y && newWalker.y < room.YMax()) walkers[w] = newWalker;
                 }
             }
