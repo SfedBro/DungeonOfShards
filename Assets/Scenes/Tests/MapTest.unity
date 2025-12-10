@@ -169,13 +169,14 @@ MonoBehaviour:
   maxRoomCount: 10
   minRatioXY: 0.2
   maxRatioXY: 0.8
-  maxEnemiesPerRoom: 3
-  drunkardWalkersSteps: 15
-  maxDiggerSteps: 30
-  chanceToPlaceEnemy: 0.05
-  baseChanceChangeDir: 0.05
+  roomEmptyFraction: 0.7
+  maxDiggerSteps: 50
+  chanceToPlaceEnemy: 0.03
+  baseChanceChangeDir: 0.1
   incChanceChangeDir: 0.05
-  specialTileThreshold: 0.25
+  specialTileThreshold: 0.4
+  maxEnemiesPerRoom: 3
+  enemyPrefab: {fileID: 2868412845582309864, guid: 365d8d4abee3a4643861d7ab057312ca, type: 3}
   roomsView: 
 --- !u!1 &1875005412
 GameObject:

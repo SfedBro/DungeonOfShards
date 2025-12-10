@@ -12,7 +12,6 @@ public class LevelMap : MonoBehaviour
     public MapTile mapTilePrefab;
     public int maxRoomCount = 10;
     public float minRatioXY = 0.2f, maxRatioXY = 0.8f;
-    public int maxEnemiesPerRoom = 3;
     [Header("Room Drunkard Walkers")]
     public float roomEmptyFraction = 0.8f; // empty tiles * roomEmptyFraction >= all room tiles
     [Header("Room Diggers")]
@@ -22,6 +21,10 @@ public class LevelMap : MonoBehaviour
     public float incChanceChangeDir = 0.05f;
     [Header("Room Special Tiles")]
     public float specialTileThreshold = 0.25f;
+    [Header("Enemies")]
+    public int maxEnemiesPerRoom = 3;
+    public GameObject enemyPrefab;
+
 
     MapTileType[,] preTiles;
     MapTile[,] tiles;
@@ -61,11 +64,12 @@ public class LevelMap : MonoBehaviour
         foreach (Room room in rooms) {
             print($"room {room.x} {room.y} {room.xLen} {room.yLen}");
             int xMid = room.x + room.xLen / 2, yMid = room.y + room.yLen / 2;
-            Vector2Int roomMin = new(room.x, room.y), roomMax = new(room.XMax() - 1, room.YMax() - 1);
+            Vector2Int roomMin = new(room.x + 1, room.y + 1), roomMax = new(room.XMax() - 2, room.YMax() - 2);
             // spawning drunkard walkers
-            List<Vector2Int> walkers = new List<Vector2Int>{ new(xMid + 1, yMid + 1), new(xMid - 1, yMid + 1), new(xMid + 1, yMid - 1), new(xMid - 1, yMid - 1) }.Select(w => { w.Clamp(roomMin, roomMax); return w;}).ToList();
+            List<Vector2Int> walkers = new List<Vector2Int>{ new(xMid + 1, yMid + 1), new(xMid - 1, yMid + 1), new(xMid + 1, yMid - 1), new(xMid - 1, yMid - 1) }.Select(w => w.ClampRet(roomMin, roomMax)).ToList();
             HashSet<Vector2Int> emptyTiles = new();
-            int minimumEmptyTiles = (int)Mathf.Ceil(room.xLen * room.yLen * roomEmptyFraction);
+            int minimumEmptyTiles = (int)((room.xLen - 2) * (room.yLen - 2) * roomEmptyFraction);
+            print(minimumEmptyTiles);
             // termination criteria
             while (emptyTiles.Count < minimumEmptyTiles) {
                 for (int w = 0; w < walkers.Count; ++w) {
@@ -77,7 +81,7 @@ public class LevelMap : MonoBehaviour
                     Vector2Int dir = dirs.SelectRandom();
                     Vector2Int newWalker = walker + dir;
                     // walker can be only in his room
-                    if (newWalker.x >= room.x && newWalker.x < room.XMax() && newWalker.y >= room.y && newWalker.y < room.YMax()) walkers[w] = newWalker;
+                    if (newWalker.x >= roomMin.x && newWalker.x <= roomMax.x && newWalker.y >= roomMin.y && newWalker.y <= roomMax.y) walkers[w] = newWalker;
                 }
             }
         }
@@ -105,28 +109,33 @@ public class LevelMap : MonoBehaviour
         // for every room
         for (int i = 0; i < rooms.Count; ++i) {
             Room room = rooms[i];
+            Vector2Int roomMin = new(room.x + 1, room.y + 1), roomMax = new(room.XMax() - 2, room.YMax() - 2);
             // spawn digger
-            Vector2Int digger = new(Random.Range(room.x, room.XMax()), Random.Range(room.y, room.YMax()));
+            Vector2Int digger = new(Random.Range(roomMin.x, room.XMax() - 2), Random.Range(roomMax.y, room.YMax() - 2));
             int dirInd = Random.Range(0, dirs.Count);
             Vector2Int dir = dirs[dirInd];
             float chanceChangeDir = baseChanceChangeDir;
             // terminal criteries
             int placedEnemies = 0, steps = 0;
+            bool needToPlace = false;
             while (placedEnemies < maxEnemiesPerRoom && steps < maxDiggerSteps) {
                 ++steps;
                 // move digger
                 Vector2Int newDiggerPos = digger + dir;
                 bool forceNewDir = false;
-                if (newDiggerPos.x < room.x || newDiggerPos.x >= room.XMax() || newDiggerPos.y < room.y || newDiggerPos.y >= room.YMax()) forceNewDir = true;
+                if (newDiggerPos.x < roomMin.x || newDiggerPos.x > roomMax.x || newDiggerPos.y < roomMin.y || newDiggerPos.y > roomMax.y) forceNewDir = true;
                 else digger = newDiggerPos;
                 // change direction if needed
                 if (forceNewDir || Random.value <= chanceChangeDir) {
                     dirInd = (dirInd + changeDirOffset.SelectRandom() + dirs.Count) % dirs.Count;
                     dir = dirs[dirInd];
                 } else chanceChangeDir += incChanceChangeDir;
-                // spawn enemy if needed
-                if (Random.value <= chanceToPlaceEnemy) {
+                // try to place enemy if needed
+                if (Random.value <= chanceToPlaceEnemy) needToPlace = true;
+                if (needToPlace && preTiles[digger.x, digger.y] == MapTileType.Empty) {
+                    needToPlace = false;
                     // place enemy
+                    Instantiate(enemyPrefab, (Vector3Int)digger, Quaternion.identity);
                     ++placedEnemies;
                 }
             }
@@ -157,6 +166,16 @@ public class LevelMap : MonoBehaviour
 public static class ListUtils {
     public static T SelectRandom<T>(this IEnumerable<T> values) {
         return values.ElementAt(Random.Range(0, values.Count()));
+    }
+}
+
+public static class VectorUtils {
+    public static Vector2 ClampRet(this Vector2 v, Vector2 vMin, Vector2 vMax) {
+        return new(Mathf.Clamp(v.x, vMin.x, vMax.x), Mathf.Clamp(v.y, vMin.y, vMax.y));
+    }
+
+    public static Vector2Int ClampRet(this Vector2Int v, Vector2Int vMin, Vector2Int vMax) {
+        return new(Mathf.Clamp(v.x, vMin.x, vMax.x), Mathf.Clamp(v.y, vMin.y, vMax.y));
     }
 }
 
