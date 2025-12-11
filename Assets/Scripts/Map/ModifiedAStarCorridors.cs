@@ -1,8 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public static class ModifiedDijkstraCorridors
+public static class ModifiedAStarCorridors
 {
     public static List<Vector2Int> MapCorridors(int[] corners, List<Room> rooms, int width = 1)
     {
@@ -13,6 +14,33 @@ public static class ModifiedDijkstraCorridors
             roomCenters.Add(rc);
         }
         var map = MakeMapLayout(corners[2] - corners[0], corners[3] - corners[1], roomCenters);
+
+        List<Vector2Int> centers = roomCenters.ToList();
+        List<Vector2Int> corp = new List<Vector2Int>(); //corridor paths
+
+        for (int i = 0; i < roomCenters.Count - 1; i++)
+        {
+            Vector2Int a = centers[i];
+            Vector2Int b = centers[i + 1];
+
+            var path = AStarPath(map, a, b);
+
+            if (path.Count == 0)
+            {
+                // A* could not find a single way
+                // fallback to right angled straight corridor to the room
+                path = FallbackDig(a, b);
+            }
+
+            // applying width(obvious, right?)
+            var wide = ApplyWidth(path, width);
+            corp.AddRange(wide);
+
+            // noting corridor cells as ones
+            foreach (var p in wide)
+                map[p.x, p.y] = 1;
+        }
+        return corp;
     }
     public static int[,] MakeMapLayout(int w, int h, HashSet<Vector2Int> rooms)
     {
@@ -36,11 +64,6 @@ public static class ModifiedDijkstraCorridors
             return x >= 0 && x < w && y >= 0 && y < h;
         }
 
-        bool Walkable(int x, int y)
-        {
-            return map[x, y] == 1;
-        }
-
         var open = new PriorityQueue<Vector2Int>();
         open.Enqueue(start, 0);
 
@@ -55,13 +78,13 @@ public static class ModifiedDijkstraCorridors
             Vector2Int current = open.Dequeue();
 
             if (current == goal)
-                return Reconstruct(came, current);
+                return AssemblePath(came, current);
 
             foreach (var d in dirs)
             {
                 Vector2Int next = new Vector2Int(current.x + d.x, current.y + d.y);
 
-                if (!Walkable(next.x, next.y))
+                if (!InBounds(next.x, next.y))
                     continue;
 
                 int tentative = g[current] + 1;
@@ -80,7 +103,7 @@ public static class ModifiedDijkstraCorridors
         }
         return new List<Vector2Int>();
     }
-    private static List<Vector2Int> Reconstruct(Dictionary<Vector2Int, Vector2Int> came, Vector2Int cur)
+    private static List<Vector2Int> AssemblePath(Dictionary<Vector2Int, Vector2Int> came, Vector2Int cur)
     {
         List<Vector2Int> path = new List<Vector2Int>();
         while (came.ContainsKey(cur))
@@ -91,6 +114,28 @@ public static class ModifiedDijkstraCorridors
         path.Add(cur);
         path.Reverse();
         return path;
+    }
+    public static List<Vector2Int> FallbackDig(Vector2Int a, Vector2Int b)
+    {
+        List<Vector2Int> result = new List<Vector2Int>();
+
+        int x = a.x;
+        int y = a.y;
+
+        while (x != b.x)
+        {
+            result.Add(new Vector2Int(x, y));
+            x += x < b.x ? 1 : -1;
+        }
+
+        while (y != b.y)
+        {
+            result.Add(new Vector2Int(x, y));
+            y += y < b.y ? 1 : -1;
+        }
+
+        result.Add(b);
+        return result;
     }
     public static List<Vector2Int> ApplyWidth(List<Vector2Int> path, int corridorWidth) // circular shape width
     {
