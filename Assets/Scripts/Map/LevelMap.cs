@@ -85,7 +85,7 @@ public class LevelMap : MonoBehaviour
                 }
             }
         }
-        var corridors = ModifiedAStarCorridors.MapCorridors(corners, rooms, 1);
+        var corridors = ModifiedAStarCorridors.MapCorridors(corners, rooms, 1, 40);
         foreach (Vector2Int cell in corridors)
         {
             preTiles[cell.x, cell.y] = MapTileType.Empty;

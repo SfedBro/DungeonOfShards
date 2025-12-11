@@ -5,7 +5,7 @@ using UnityEngine;
 
 public static class ModifiedAStarCorridors
 {
-    public static List<Vector2Int> MapCorridors(int[] corners, List<Room> rooms, int width = 1)
+    public static List<Vector2Int> MapCorridors(int[] corners, List<Room> rooms, int width = 1, float maxPathLen = float.MaxValue)
     {
         HashSet<Vector2Int> roomCenters = new (rooms.Count);
         foreach (Room room in rooms)
@@ -31,6 +31,12 @@ public static class ModifiedAStarCorridors
                 // fallback to right angled straight corridor to the room
                 path = FallbackDig(a, b);
             }
+
+            // noting corridor cells as ones
+            foreach (var p in path)
+                map[p.x, p.y] = 1;
+            //adding shortcuts if the way is longer than maxPathLen
+            path.AddRange(AddExtraConnections(map, centers, path.Count * 2 / roomCenters.Count, maxPathLen));
 
             // applying width(obvious, right?)
             var wide = ApplyWidth(path, width);
@@ -135,6 +141,35 @@ public static class ModifiedAStarCorridors
         }
 
         result.Add(b);
+        return result;
+    }
+    public static List<Vector2Int> AddExtraConnections(int[,] map, List<Vector2Int> centers, float maxConnectDist = 0f, float maxAllowedAStarLength = float.MaxValue)
+    {
+        List<Vector2Int> result = new();
+
+        int n = centers.Count;
+
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = i + 1; j < n; j++)
+            {
+                float direct = Vector2Int.Distance(centers[i], centers[j]);
+
+                if (direct > maxConnectDist)
+                    continue;
+
+                // attempt to go throught existing corridors
+                var path = AStarPath(map, centers[i], centers[j]);
+
+                if (path.Count == 0 || path.Count > maxAllowedAStarLength)
+                {
+                    // if too far, make a new path
+                    var digPath = AStarPath(map, centers[i], centers[j]);
+
+                    result.AddRange(digPath);
+                }
+            }
+        }
         return result;
     }
     public static List<Vector2Int> ApplyWidth(List<Vector2Int> path, int corridorWidth) // circular shape width
