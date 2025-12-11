@@ -10,8 +10,10 @@ public class LevelMap : MonoBehaviour
 
     [Header("Rooms")]
     public MapTile mapTilePrefab;
-    public int maxRoomCount = 10;
+    public int maxRoomCount = 10, minRoomSide = 4;
     public float minRatioXY = 0.2f, maxRatioXY = 0.8f;
+    public bool differentAxis = true;
+    public int generationSeed = 0;
     [Header("Room Drunkard Walkers")]
     public float roomEmptyFraction = 0.8f; // empty tiles * roomEmptyFraction >= all room tiles
     [Header("Room Diggers")]
@@ -58,7 +60,7 @@ public class LevelMap : MonoBehaviour
         // default tile types to wall
         IterateOver2Loops(xSize, ySize, (x, y) => preTiles[x, y] = MapTileType.Wall);
         int[] corners = new int[4] {0, 0, xSize, ySize}; // map corners
-        rooms = MapSpacePartitioning.GenerateRooms(corners, maxRoomCount, minRatioXY, maxRatioXY); // generates room points
+        rooms = MapSpacePartitioning.GenerateRooms(corners, maxRoomCount, minRatioXY, maxRatioXY, minRoomSide, differentAxis, generationSeed); // generates room points
         int ind = 0;
         foreach (Room r in rooms) roomsView.Add(ind++);
         foreach (Room room in rooms) {

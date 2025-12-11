@@ -167,8 +167,11 @@ MonoBehaviour:
   ySize: 60
   mapTilePrefab: {fileID: 6453784462756596918, guid: 2b50a0ebccc25144084a4ee54720d486, type: 3}
   maxRoomCount: 10
-  minRatioXY: 0.2
-  maxRatioXY: 0.8
+  minRoomSide: 4
+  minRatioXY: 0.4
+  maxRatioXY: 0.6
+  differentAxis: 1
+  generationSeed: 14
   roomEmptyFraction: 0.7
   maxDiggerSteps: 50
   chanceToPlaceEnemy: 0.03

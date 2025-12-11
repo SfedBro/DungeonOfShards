@@ -3,7 +3,7 @@ using UnityEngine;
 
 public static class MapSpacePartitioning
 {
-    public static List<Room> GenerateRooms(int[] corners, int maxRoomCount, float minRatioXY, float maxRatioXY, int seed = 0)
+    public static List<Room> GenerateRooms(int[] corners, int maxRoomCount, float minRatioXY, float maxRatioXY, int minRoomSize = 1, bool useOppositeAxis = true, int seed = 0)
     {
         Random.InitState(seed);
         List<Room> rooms = new List<Room>();
@@ -14,99 +14,48 @@ public static class MapSpacePartitioning
         while (queue.Count > 0 && rooms.Count + queue.Count < maxRoomCount)
         {
             Room current = queue.Dequeue();
+            bool canSplitHorizontal = current.yLen >= minRoomSize * 2;
+            bool canSplitVertical = current.xLen >= minRoomSize * 2;
             bool horizontal = Random.value > 0.5f;
 
-            bool canHorizontal = current.yLen > 1;
-            bool canVertical = current.xLen > 1;
+            bool attempted = false;
+            bool success = false;
 
-            if (horizontal)
+            if (horizontal && canSplitHorizontal)
             {
-                Debug.Log("Horizontal");
-                int minSplit = current.y + (int)(current.yLen * minRatioXY);
-                int maxSplit = current.y + (int)(current.yLen * maxRatioXY);
-
-                if (maxSplit > minSplit)
-                {
-                    int split = Random.Range(minSplit, maxSplit);
-
-                    if (split - current.y == 0) split += 1;
-                    else if (current.YMax() - split == 0) split -= 1;
-
-                    Room bottom = new Room(current.x, current.y, current.XMax(), split);
-                    Room top = new Room(current.x, split, current.XMax(), current.YMax());
-
-                    queue.Enqueue(bottom);
-                    queue.Enqueue(top);
-                    continue;
-                }
-                else if (canVertical)
-                {
-                    Debug.Log("Horizontal drawback");
-                    // fallback
-                    minSplit = current.x + (int)(current.xLen * minRatioXY);
-                    maxSplit = current.x + (int)(current.xLen * maxRatioXY);
-
-                    if (maxSplit > minSplit)
-                    {
-                        int split = Random.Range(minSplit, maxSplit);
-
-                        if (split - current.x == 0) split += 1;
-                        else if (current.XMax() - split == 0) split -= 1;
-
-                        Room left = new Room(current.x, current.y, split, current.YMax());
-                        Room right = new Room(split, current.y, current.XMax(), current.YMax());
-
-                        queue.Enqueue(left);
-                        queue.Enqueue(right);
-                        continue;
-                    }
-                }
-
-                rooms.Add(current);
+                success = TrySplitHorizontal(current, queue, minRoomSize, minRatioXY, maxRatioXY, useOppositeAxis);
+                attempted = true;
             }
-            else
+            else if (!horizontal && canSplitVertical)
             {
-                Debug.Log("Vertical");
-                int minSplit = current.x + (int)(current.xLen * minRatioXY);
-                int maxSplit = current.x + (int)(current.xLen * maxRatioXY);
+                success = TrySplitVertical(current, queue, minRoomSize, minRatioXY, maxRatioXY, useOppositeAxis);
+                attempted = true;
+            }
 
-                if (maxSplit > minSplit)
+            // 2) did not succeed so attempting otherwise
+            if (!success)
+            {
+                if (!attempted)  // did not attempt due the conditions
                 {
-                    int split = Random.Range(minSplit, maxSplit);
+                    if (!horizontal && canSplitHorizontal)
+                        success = TrySplitHorizontal(current, queue, minRoomSize, minRatioXY, maxRatioXY, useOppositeAxis);
 
-                    if (split - current.x == 0) split += 1;
-                    else if (current.XMax() - split == 0) split -= 1;
-
-                    Room left = new Room(current.x, current.y, split, current.YMax());
-                    Room right = new Room(split, current.y, current.XMax(), current.YMax());
-
-                    queue.Enqueue(left);
-                    queue.Enqueue(right);
-                    continue;
+                    else if (horizontal && canSplitVertical)
+                        success = TrySplitVertical(current, queue, minRoomSize, minRatioXY, maxRatioXY, useOppositeAxis);
                 }
-                else if (canHorizontal)
+                else // attempted unsuccessfull
                 {
-                    Debug.Log("Vertical drawback");
-                    // fallback
-                    minSplit = current.y + (int)(current.yLen * minRatioXY);
-                    maxSplit = current.y + (int)(current.yLen * maxRatioXY);
+                    if (horizontal && canSplitVertical)
+                        success = TrySplitVertical(current, queue, minRoomSize, minRatioXY, maxRatioXY, useOppositeAxis);
 
-                    if (maxSplit > minSplit)
-                    {
-                        int split = Random.Range(minSplit, maxSplit);
-
-                        if (split - current.y == 0) split += 1;
-                        else if(current.YMax() - split == 0) split -= 1;
-
-                        Room bottom = new Room(current.x, current.y, current.XMax(), split);
-                        Room top = new Room(current.x, split, current.XMax(), current.YMax());
-
-                        queue.Enqueue(bottom);
-                        queue.Enqueue(top);
-                        continue;
-                    }
+                    else if (!horizontal && canSplitHorizontal)
+                        success = TrySplitHorizontal(current, queue, minRoomSize, minRatioXY, maxRatioXY, useOppositeAxis);
                 }
+            }
 
+            // 3) room cannot be split
+            if (!success)
+            {
                 rooms.Add(current);
             }
         }
@@ -115,6 +64,50 @@ public static class MapSpacePartitioning
             rooms.Add(queue.Dequeue());
         }
         return rooms;
+    }
+    static bool TrySplitHorizontal(Room r, Queue<Room> q, int minRoomSize, float minRatio, float maxRatio, bool useOppositeAxis)
+    {
+        Debug.Log("Horizontal");
+        int axisLen = useOppositeAxis ? r.xLen : r.yLen;
+        int relMin = Mathf.CeilToInt(axisLen * minRatio);
+        int relMax = Mathf.FloorToInt(axisLen * maxRatio);
+
+        int minSplit = Mathf.Max(r.y + relMin, r.y + minRoomSize);
+        int maxSplit = Mathf.Min(r.YMax() - minRoomSize, r.y + relMax);
+
+        if (maxSplit < minSplit) return false;
+
+        int split = Random.Range(minSplit, maxSplit + 1);
+
+        Debug.Log($"{r.y}, {split}, {r.YMax()}");
+
+        Room bottom = new Room(r.x, r.y, r.XMax(), split);
+        Room top = new Room(r.x, split, r.XMax(), r.YMax());
+        q.Enqueue(bottom);
+        q.Enqueue(top);
+        return true;
+    }
+    static bool TrySplitVertical(Room r, Queue<Room> q, int minRoomSize, float minRatio, float maxRatio, bool useOppositeAxis)
+    {
+        Debug.Log("Vertical");
+        int axisLen = useOppositeAxis ? r.yLen : r.xLen;
+        int relMin = Mathf.CeilToInt(axisLen * minRatio);
+        int relMax = Mathf.FloorToInt(axisLen * maxRatio);
+
+        int minSplit = Mathf.Max(r.x + relMin, r.x + minRoomSize);
+        int maxSplit = Mathf.Min(r.XMax() - minRoomSize, r.x + relMax);
+
+        if (maxSplit < minSplit) return false;
+
+        int split = Random.Range(minSplit, maxSplit + 1);
+
+        Debug.Log($"{r.x}, {split}, {r.XMax()}");
+
+        Room left = new Room(r.x, r.y, split, r.YMax());
+        Room right = new Room(split, r.y, r.XMax(), r.YMax());
+        q.Enqueue(left);
+        q.Enqueue(right);
+        return true;
     }
 }
 
