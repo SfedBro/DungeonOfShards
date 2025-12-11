@@ -140,7 +140,7 @@ public class LevelMap : MonoBehaviour
                 if (needToPlace && preTiles[digger.x, digger.y] == MapTileType.Empty) {
                     needToPlace = false;
                     // place enemy
-                    Instantiate(enemyPrefab, (Vector3Int)digger, Quaternion.identity);
+                    Instantiate(enemyPrefab, (Vector3Int)digger + Vector3Int.back, Quaternion.identity);
                     ++placedEnemies;
                 }
             }
@@ -185,8 +185,8 @@ public static class VectorUtils {
 }
 
 class PerlinNoise {
-    Vector2[,] gradients;
-    int xSize, ySize;
+    readonly Vector2[,] gradients;
+    readonly int xSize, ySize;
 
     public PerlinNoise(int xSize, int ySize) {
         this.xSize = xSize; this.ySize = ySize;
@@ -197,6 +197,7 @@ class PerlinNoise {
     }
 
     public float Get(int x, int y) {
+        x = Mathf.Clamp(x, 0, xSize - 1); y = Mathf.Clamp(y, 0, ySize - 1);
         Vector2
             g00 = gradients[x, y],
             g01 = gradients[x, y + 1],
