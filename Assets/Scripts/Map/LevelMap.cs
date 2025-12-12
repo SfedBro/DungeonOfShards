@@ -69,7 +69,6 @@ public class LevelMap : MonoBehaviour
         IterateOver2Loops(xSize, ySize, (x, y) => preTiles[x, y] = MapTileType.Wall);
         int[] corners = new int[4] {0, 0, xSize, ySize}; // map corners
         rooms = MapSpacePartitioning.GenerateRooms(corners, maxRoomCount, minRatioXY, maxRatioXY, minRoomSide, differentAxis, generationSeed); // generates room points
-        int ind = 0;
         foreach (Room room in rooms) {
             if (debug) print($"room {room.x} {room.y} {room.xLen} {room.yLen}");
             int xMid = room.x + room.xLen / 2, yMid = room.y + room.yLen / 2;
@@ -149,7 +148,7 @@ public class LevelMap : MonoBehaviour
                 if (needToPlace && preTiles[digger.x, digger.y] == MapTileType.Empty) {
                     needToPlace = false;
                     // place enemy
-                    Instantiate(enemyPrefab, (Vector3Int)digger + Vector3Int.back, Quaternion.identity);
+                    Instantiate(enemyPrefab, (Vector3Int)digger, Quaternion.identity);
                     ++placedEnemies;
                 }
             }

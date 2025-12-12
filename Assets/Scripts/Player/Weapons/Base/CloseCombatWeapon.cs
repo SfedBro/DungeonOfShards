@@ -21,7 +21,7 @@ public abstract class CloseCombatWeapon : BaseWeapon
             _filter.SetLayerMask(affectedMasks);
     }
 
-    private void Update()
+    private new void Update()
     {
         if (coolDown > 0)
         {

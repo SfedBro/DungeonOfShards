@@ -7,11 +7,11 @@ public class EnemyMover : MonoBehaviour
     public float reachDistance = 0.15f;
     public LayerMask enemyMask;
 
-    private List<Vector3> path;
-    private int index;
+    public List<Vector3> path;
+    public int index;
 
     private float avoidRadius = 1f;
-    private float avoidForce = 2f;
+    private float avoidForce = 0f;
 
     public void SetPath(List<Vector3> newPath)
     {
@@ -25,13 +25,16 @@ public class EnemyMover : MonoBehaviour
             return;
 
         Vector3 target = path[index];
-        Vector3 dir = (target - transform.position);
-        dir.y = 0f;
+        Vector3 dir = new Vector3(target.x - transform.position.x, target.y - transform.position.y, 0);
 
         if (dir.magnitude < reachDistance)
         {
             index++;
-            return;
+            if (index >= path.Count)
+            {
+                path = null;
+                return;
+            }
         }
 
         dir = dir.normalized;

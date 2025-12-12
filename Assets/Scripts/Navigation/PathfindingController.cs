@@ -16,13 +16,18 @@ namespace Game.Navigation
         public List<Vector3> BuildPath(Vector3 from, Vector3 to)
         {
             var raw = pathfinder.FindPath(from, to);
-            if (raw == null) return null;
+            if (raw == null)
+            {
+                Debug.Log("FindPath = NULL");
+                return null;
+            }
+            Debug.Log("FindPath raw len: " + raw.Count);
 
-            List<Vector3> rawWorld = new List<Vector3>();
-            foreach (var p in raw)
-                rawWorld.Add(grid.GridToWorld(p));
+            var simplified = PathUtilities.SimplifyPath(raw, grid);
 
-            return PathUtilities.SimplifyPath(raw, grid);
+            Debug.Log("Simplify len: " + simplified.Count);
+
+            return simplified;
         }
     }
 }

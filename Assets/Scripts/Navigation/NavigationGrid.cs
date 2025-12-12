@@ -12,6 +12,11 @@ namespace Game.Navigation
 
         public LevelMap levelMap;
 
+        void Awake()
+        {
+            Init(levelMap);
+        }
+
         public void Init(LevelMap map)
         {
             tiles = map.GetMapTileTypes();
@@ -31,16 +36,13 @@ namespace Game.Navigation
         public Vector2Int WorldToGrid(Vector3 pos)
         {
             int x = Mathf.FloorToInt((pos.x - origin.x) / nodeSize);
-            int y = Mathf.FloorToInt((pos.z - origin.z) / nodeSize);
+            int y = Mathf.FloorToInt((pos.y - origin.y) / nodeSize);
             return new Vector2Int(x, y);
         }
 
         public Vector3 GridToWorld(int x, int y)
         {
-            return origin +
-                   new Vector3(x * nodeSize + nodeSize * 0.5f,
-                               0,
-                               y * nodeSize + nodeSize * 0.5f);
+            return origin + new Vector3(x * nodeSize, y * nodeSize, 0);
         }
 
         public Vector3 GridToWorld(Vector2Int p)
