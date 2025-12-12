@@ -4,40 +4,59 @@ namespace Game.Navigation
 {
     public class NavigationGrid : MonoBehaviour
     {
-        public bool vertical = true;
-        public int gridSizeX = 20;
-        public int gridSizeY = 20;
         public float nodeSize = 1f;
-        public LayerMask obstacleMask;
+        private MapTileType[,] tiles;
+        private int sizeX;
+        private int sizeY;
+        private Vector3 origin;
 
-        private Node[,] grid;
+        public LevelMap levelMap;
 
-        public void CreateGrid()
+        public void Init(LevelMap map)
         {
-            grid = new Node[gridSizeX, gridSizeY];
-            Vector3 origin = transform.position;
+            tiles = map.GetMapTileTypes();
+            sizeX = tiles.GetLength(0);
+            sizeY = tiles.GetLength(1);
+            origin = transform.position;
+        }
+        public bool IsWalkable(int x, int y)
+        {
+            if (x < 0 || x >= sizeX || y < 0 || y >= sizeY)
+                return false;
 
-            for (int x = 0; x < gridSizeX; x++)
+            MapTileType t = tiles[x, y];
+            return t == MapTileType.Empty || t == MapTileType.Slow;
+        }
+
+        public Vector2Int WorldToGrid(Vector3 pos)
+        {
+            int x = Mathf.FloorToInt((pos.x - origin.x) / nodeSize);
+            int y = Mathf.FloorToInt((pos.z - origin.z) / nodeSize);
+            return new Vector2Int(x, y);
+        }
+
+        public Vector3 GridToWorld(int x, int y)
+        {
+            return origin +
+                   new Vector3(x * nodeSize + nodeSize * 0.5f,
+                               0,
+                               y * nodeSize + nodeSize * 0.5f);
+        }
+
+        public Vector3 GridToWorld(Vector2Int p)
+        {
+            return GridToWorld(p.x, p.y);
+        }
+
+        public MapTileType[,] GetGrid()
+        {
+            if (tiles == null)
             {
-                for (int y = 0; y < gridSizeY; y++)
-                {
-                    Vector3 worldPoint = origin + Vector3.right * (x * nodeSize + nodeSize / 2) + Vector3.forward * (y * nodeSize + nodeSize / 2);
-                    bool notOccupied = !Physics.CheckSphere(worldPoint, nodeSize * 0.4f, obstacleMask);
-                    MovementType movement = MovementType.Ground | MovementType.Flying;
-                    grid[x, y] = new Node(x, y, notOccupied, movement);
-                }
+                Debug.LogError("NavigationGrid tiles == null: Init() not called yet!");
             }
+            return tiles;
         }
-
-        public Node NodeFromWorldPoint(Vector3 worldPos)
-        {
-            float percentX = Mathf.Clamp01((worldPos.x + gridSizeX / 2f * nodeSize) / (gridSizeX * nodeSize));
-            float percentY = Mathf.Clamp01((worldPos.z + gridSizeY / 2f * nodeSize) / (gridSizeY * nodeSize));
-            int x = Mathf.RoundToInt((gridSizeX - 1) * percentX);
-            int y = Mathf.RoundToInt((gridSizeY - 1) * percentY);
-            return grid[x, y];
-        }
-
-        public Node[,] GetGrid() => grid;
+        public int Width => sizeX;
+        public int Height => sizeY;
     }
 }

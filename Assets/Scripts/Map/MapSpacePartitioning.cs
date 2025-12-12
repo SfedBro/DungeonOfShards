@@ -67,7 +67,7 @@ public static class MapSpacePartitioning
     }
     static bool TrySplitHorizontal(Room r, Queue<Room> q, int minRoomSize, float minRatio, float maxRatio, bool useOppositeAxis)
     {
-        Debug.Log("Horizontal");
+        //Debug.Log("Horizontal");
         int axisLen = useOppositeAxis ? r.xLen : r.yLen;
         int relMin = Mathf.CeilToInt(axisLen * minRatio);
         int relMax = Mathf.FloorToInt(axisLen * maxRatio);
@@ -79,7 +79,7 @@ public static class MapSpacePartitioning
 
         int split = Random.Range(minSplit, maxSplit + 1);
 
-        Debug.Log($"{r.y}, {split}, {r.YMax()}");
+        //Debug.Log($"{r.y}, {split}, {r.YMax()}");
 
         Room bottom = new Room(r.x, r.y, r.XMax(), split);
         Room top = new Room(r.x, split, r.XMax(), r.YMax());
@@ -89,7 +89,7 @@ public static class MapSpacePartitioning
     }
     static bool TrySplitVertical(Room r, Queue<Room> q, int minRoomSize, float minRatio, float maxRatio, bool useOppositeAxis)
     {
-        Debug.Log("Vertical");
+        //Debug.Log("Vertical");
         int axisLen = useOppositeAxis ? r.yLen : r.xLen;
         int relMin = Mathf.CeilToInt(axisLen * minRatio);
         int relMax = Mathf.FloorToInt(axisLen * maxRatio);
@@ -101,7 +101,7 @@ public static class MapSpacePartitioning
 
         int split = Random.Range(minSplit, maxSplit + 1);
 
-        Debug.Log($"{r.x}, {split}, {r.XMax()}");
+        //Debug.Log($"{r.x}, {split}, {r.XMax()}");
 
         Room left = new Room(r.x, r.y, split, r.YMax());
         Room right = new Room(split, r.y, r.XMax(), r.YMax());

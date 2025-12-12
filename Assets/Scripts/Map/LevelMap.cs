@@ -1,3 +1,4 @@
+using Game.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,11 +28,10 @@ public class LevelMap : MonoBehaviour
     public int maxEnemiesPerRoom = 3;
     public GameObject enemyPrefab;
 
-
+    private bool debug = false;
     MapTileType[,] preTiles;
     MapTile[,] tiles;
     List<Room> rooms;
-    public List<int> roomsView;
 
     readonly List<Vector2Int> dirs = new() { new(1, 0), new(0, 1), new(-1, 0), new(0, -1) };
 
@@ -40,6 +40,14 @@ public class LevelMap : MonoBehaviour
         AddSpecialTiles();
         SpawnMap();
         SpawnEnemies();
+
+        var grid = FindAnyObjectByType<NavigationGrid>();
+        grid.Init(this);
+
+        var pf = FindAnyObjectByType<PathfindingController>();
+        pf.Init(grid);
+
+        Debug.Log("Initialization complete");
     }
 
     // shortcut for 2 fors
@@ -62,16 +70,15 @@ public class LevelMap : MonoBehaviour
         int[] corners = new int[4] {0, 0, xSize, ySize}; // map corners
         rooms = MapSpacePartitioning.GenerateRooms(corners, maxRoomCount, minRatioXY, maxRatioXY, minRoomSide, differentAxis, generationSeed); // generates room points
         int ind = 0;
-        foreach (Room r in rooms) roomsView.Add(ind++);
         foreach (Room room in rooms) {
-            print($"room {room.x} {room.y} {room.xLen} {room.yLen}");
+            if (debug) print($"room {room.x} {room.y} {room.xLen} {room.yLen}");
             int xMid = room.x + room.xLen / 2, yMid = room.y + room.yLen / 2;
             Vector2Int roomMin = new(room.x + 1, room.y + 1), roomMax = new(room.XMax() - 2, room.YMax() - 2);
             // spawning drunkard walkers
             List<Vector2Int> walkers = new List<Vector2Int>{ new(xMid + 1, yMid + 1), new(xMid - 1, yMid + 1), new(xMid + 1, yMid - 1), new(xMid - 1, yMid - 1) }.Select(w => w.ClampRet(roomMin, roomMax)).ToList();
             HashSet<Vector2Int> emptyTiles = new();
             int minimumEmptyTiles = (int)((room.xLen - 2) * (room.yLen - 2) * roomEmptyFraction);
-            print(minimumEmptyTiles);
+            if (debug) print(minimumEmptyTiles);
             // termination criteria
             while (emptyTiles.Count < minimumEmptyTiles) {
                 for (int w = 0; w < walkers.Count; ++w) {

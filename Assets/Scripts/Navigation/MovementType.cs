@@ -7,6 +7,6 @@ namespace Game.Navigation
         Ground,
         Flying,
         Swimming,
-        Breakable,
+        Breaking
     }
 }
