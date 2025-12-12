@@ -11,7 +11,7 @@ public class EnemyMover : MonoBehaviour
     public int index;
 
     private float avoidRadius = 1f;
-    private float avoidForce = 0f;
+    private float avoidForce = 5f;
 
     public void SetPath(List<Vector3> newPath)
     {

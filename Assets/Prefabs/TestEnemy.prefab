@@ -107,6 +107,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   path: []
+  index: 0
 --- !u!114 &4176098693597850197
 MonoBehaviour:
   m_ObjectHideFlags: 0
